@@ -13,14 +13,14 @@ export function SetupScreen({ onDone, defaultName }: { onDone: () => void; defau
   const [busy, setBusy] = useState(false);
 
   async function run(fn: "create" | "join") {
-    if (!name.trim()) return toast.error("Diga como quer ser chamado");
+    if (!name.trim()) { toast.error("Diga como quer ser chamado"); return; }
     setBusy(true);
     const { error } =
       fn === "create"
         ? await supabase.rpc("create_household", { _name: house, _display_name: name.trim() })
         : await supabase.rpc("join_household", { _code: code, _display_name: name.trim() });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     onDone();
   }
 

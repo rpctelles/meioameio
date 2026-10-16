@@ -69,12 +69,12 @@ export function Dashboard({ me, household, members }: { me: string; household: H
   async function remove(e: Expense) {
     if (!confirm(`Excluir "${e.description}"?`)) return;
     const { error } = await supabase.from("expenses").delete().eq("id", e.id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     refresh();
   }
   async function markPaid(e: Expense) {
     const { error } = await supabase.from("expenses").update({ is_paid: true, expense_date: new Date().toISOString().slice(0, 10) }).eq("id", e.id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Marcado como pago");
     refresh();
   }
@@ -88,7 +88,7 @@ export function Dashboard({ me, household, members }: { me: string; household: H
       to_user: balance > 0 ? me : partner.user_id,
       amount: amt,
     });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Contas acertadas! 🎉");
     refresh();
   }

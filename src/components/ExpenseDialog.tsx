@@ -44,7 +44,7 @@ export function ExpenseDialog({ open, onOpenChange, householdId, me, members, ed
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
-    if (!f.description.trim() || amount <= 0) return toast.error("Preencha descrição e valor");
+    if (!f.description.trim() || amount <= 0) { toast.error("Preencha descrição e valor"); return; }
     const row = {
       household_id: householdId,
       description: f.description.trim().slice(0, 120),
@@ -60,7 +60,7 @@ export function ExpenseDialog({ open, onOpenChange, householdId, me, members, ed
     const { error } = editing
       ? await supabase.from("expenses").update(row).eq("id", editing.id)
       : await supabase.from("expenses").insert({ ...row, created_by: me });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     if (f.due_date && !f.is_paid && addCal) {
       window.open(googleCalendarLink({ title: `💸 Pagar: ${row.description} (${brl(amount)})`, date: f.due_date, details: `Pago por ${payer?.display_name ?? ""}. Categoria: ${f.category}` }), "_blank");
     }
@@ -123,7 +123,7 @@ export function ExpenseDialog({ open, onOpenChange, householdId, me, members, ed
                   ))}
                 </div>
               </div>
-              <Slider className="my-4" min={0} max={100} step={5} value={[f.payer_share]} onValueChange={([v]) => setF({ ...f, payer_share: v })} />
+              <Slider className="my-4" min={0} max={100} step={5} value={[f.payer_share]} onValueChange={([v]) => setF({ ...f, payer_share: v ?? 50 })} />
               <div className="flex justify-between text-sm">
                 <span><b>{payer?.display_name}</b> {f.payer_share}% · {brl((amount * f.payer_share) / 100)}</span>
                 <span><b>{other?.display_name}</b> {100 - f.payer_share}% · {brl((amount * (100 - f.payer_share)) / 100)}</span>

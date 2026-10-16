@@ -40,7 +40,7 @@ function Index() {
   }
   if (!user) return <AuthScreen />;
   if (!home.data) {
-    const n = (user.user_metadata?.full_name as string | undefined)?.split(" ")[0] ?? "";
+    const n = (user.user_metadata?.['full_name'] as string | undefined)?.split(" ")[0] ?? "";
     return <SetupScreen defaultName={n} onDone={() => home.refetch()} />;
   }
   return <Dashboard me={user.id} household={home.data.household} members={home.data.members} />;
