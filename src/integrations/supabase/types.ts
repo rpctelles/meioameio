@@ -14,13 +14,170 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          created_by: string
+          description: string
+          due_date: string | null
+          expense_date: string
+          household_id: string
+          id: string
+          is_paid: boolean
+          notes: string | null
+          paid_by: string
+          payer_share: number
+        }
+        Insert: {
+          amount: number
+          category?: string
+          created_at?: string
+          created_by: string
+          description: string
+          due_date?: string | null
+          expense_date?: string
+          household_id: string
+          id?: string
+          is_paid?: boolean
+          notes?: string | null
+          paid_by: string
+          payer_share?: number
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          created_by?: string
+          description?: string
+          due_date?: string | null
+          expense_date?: string
+          household_id?: string
+          id?: string
+          is_paid?: boolean
+          notes?: string | null
+          paid_by?: string
+          payer_share?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      household_members: {
+        Row: {
+          display_name: string
+          household_id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          display_name: string
+          household_id: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          display_name?: string
+          household_id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "household_members_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      households: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          invite_code: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          invite_code?: string
+          name?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          invite_code?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      settlements: {
+        Row: {
+          amount: number
+          created_at: string
+          from_user: string
+          household_id: string
+          id: string
+          note: string | null
+          settled_on: string
+          to_user: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          from_user: string
+          household_id: string
+          id?: string
+          note?: string | null
+          settled_on?: string
+          to_user: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          from_user?: string
+          household_id?: string
+          id?: string
+          note?: string | null
+          settled_on?: string
+          to_user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "settlements_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_household: {
+        Args: { _display_name: string; _name: string }
+        Returns: string
+      }
+      is_member: { Args: { _hid: string }; Returns: boolean }
+      join_household: {
+        Args: { _code: string; _display_name: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
