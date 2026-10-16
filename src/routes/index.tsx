@@ -1,24 +1,47 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { AuthScreen } from "@/components/AuthScreen";
+import { SetupScreen } from "@/components/SetupScreen";
+import { Dashboard } from "@/components/Dashboard";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "Meio a Meio — gastos do casal" },
+      { name: "description", content: "Controle e divida os gastos da casa com seu par, do jeito de vocês." },
+      { property: "og:title", content: "Meio a Meio — gastos do casal" },
+      { property: "og:description", content: "Controle e divida os gastos da casa com seu par, do jeito de vocês." },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
+  const { user, loading } = useAuth();
+  const home = useQuery({
+    queryKey: ["home", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data: mine, error } = await supabase.from("household_members").select("household_id").eq("user_id", user!.id).maybeSingle();
+      if (error) throw error;
+      if (!mine) return null;
+      const [{ data: household }, { data: members }] = await Promise.all([
+        supabase.from("households").select("*").eq("id", mine.household_id).single(),
+        supabase.from("household_members").select("*").eq("household_id", mine.household_id).order("joined_at"),
+      ]);
+      return { household: household!, members: members ?? [] };
+    },
+  });
+
+  if (loading || (user && home.isLoading)) {
+    return <div className="flex min-h-screen items-center justify-center font-display text-2xl text-muted-foreground">Meio a Meio</div>;
+  }
+  if (!user) return <AuthScreen />;
+  if (!home.data) {
+    const n = (user.user_metadata?.['full_name'] as string | undefined)?.split(" ")[0] ?? "";
+    return <SetupScreen defaultName={n} onDone={() => home.refetch()} />;
+  }
+  return <Dashboard me={user.id} household={home.data.household} members={home.data.members} />;
 }
