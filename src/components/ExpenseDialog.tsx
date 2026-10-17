@@ -9,9 +9,10 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CATEGORIES, type Expense, type Member } from "@/lib/types";
+import { type Expense, type Member } from "@/lib/types";
 import { brl } from "@/lib/split";
 import { googleCalendarLink } from "@/lib/gcal";
+import { useCategories } from "@/hooks/useCategories";
 
 type Props = {
   open: boolean;
@@ -28,6 +29,16 @@ const today = () => new Date().toISOString().slice(0, 10);
 export function ExpenseDialog({ open, onOpenChange, householdId, me, members, editing, onSaved }: Props) {
   const [f, setF] = useState({ description: "", amount: "", category: "Mercado", expense_date: today(), paid_by: me, payer_share: 50, is_paid: true, due_date: "", notes: "" });
   const [addCal, setAddCal] = useState(true);
+  const cats = useCategories(householdId);
+  const [newCat, setNewCat] = useState<{ name: string; emoji: string } | null>(null);
+  async function createCat() {
+    if (!newCat?.name.trim()) return;
+    const err = await cats.add(newCat.name, newCat.emoji);
+    if (err) { toast.error(err.code === "23505" ? "Essa categoria já existe" : err.message); return; }
+    setF((x) => ({ ...x, category: newCat.name.trim().slice(0, 30) }));
+    setNewCat(null);
+    toast.success("Categoria criada");
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -89,12 +100,21 @@ export function ExpenseDialog({ open, onOpenChange, householdId, me, members, ed
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Categoria</Label>
-              <Select value={f.category} onValueChange={(v) => setF({ ...f, category: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES.map((c) => <SelectItem key={c.name} value={c.name}>{c.emoji} {c.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              {newCat ? (
+                <div className="flex gap-1">
+                  <Input className="w-12 px-2 text-center" maxLength={2} value={newCat.emoji} onChange={(e) => setNewCat({ ...newCat, emoji: e.target.value })} />
+                  <Input autoFocus placeholder="Nome" maxLength={30} value={newCat.name} onChange={(e) => setNewCat({ ...newCat, name: e.target.value })} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); createCat(); } if (e.key === "Escape") setNewCat(null); }} />
+                  <Button type="button" size="sm" onClick={createCat}>OK</Button>
+                </div>
+              ) : (
+                <Select value={f.category} onValueChange={(v) => (v === "__new" ? setNewCat({ name: "", emoji: "🏷️" }) : setF({ ...f, category: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {cats.all.map((c) => <SelectItem key={c.name} value={c.name}>{c.emoji} {c.name}</SelectItem>)}
+                    <SelectItem value="__new">➕ Nova categoria…</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
             </div>
             <div className="space-y-1.5">
               <Label>Data</Label>
@@ -109,9 +129,15 @@ export function ExpenseDialog({ open, onOpenChange, householdId, me, members, ed
                   {m.display_name}
                 </Button>
               ))}
+              {members.length < 2 && (
+                <Button type="button" variant="outline" disabled>Seu par</Button>
+              )}
             </div>
+            {members.length < 2 && (
+              <p className="text-xs text-muted-foreground">Quando seu par entrar com o código de convite, você poderá registrar gastos pagos por ele(a).</p>
+            )}
           </div>
-          {members.length > 1 && (
+          {(
             <div className="rounded-xl bg-muted p-4">
               <div className="flex items-center justify-between text-sm">
                 <Label>Divisão</Label>
@@ -126,7 +152,7 @@ export function ExpenseDialog({ open, onOpenChange, householdId, me, members, ed
               <Slider className="my-4" min={0} max={100} step={5} value={[f.payer_share]} onValueChange={([v]) => setF({ ...f, payer_share: v ?? 50 })} />
               <div className="flex justify-between text-sm">
                 <span><b>{payer?.display_name}</b> {f.payer_share}% · {brl((amount * f.payer_share) / 100)}</span>
-                <span><b>{other?.display_name}</b> {100 - f.payer_share}% · {brl((amount * (100 - f.payer_share)) / 100)}</span>
+                <span><b>{other?.display_name ?? "Seu par"}</b> {100 - f.payer_share}% · {brl((amount * (100 - f.payer_share)) / 100)}</span>
               </div>
             </div>
           )}
