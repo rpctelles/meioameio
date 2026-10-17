@@ -191,28 +191,34 @@ export function Dashboard({ me, household, members }: { me: string; household: H
               {upcoming.slice(0, 6).map((e) => {
                 const days = e.due_date ? differenceInCalendarDays(parseISO(e.due_date), new Date()) : null;
                 return (
-                  <li key={e.id} className="flex items-center gap-3 py-2.5">
-                    <span className="text-xl">{catEmoji(e.category)}</span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium">{e.description}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {e.due_date ? format(parseISO(e.due_date), "dd 'de' MMM", { locale: ptBR }) : "Sem data"} · {name(e.paid_by)}
-                      </p>
+                  <li key={e.id} className="py-3">
+                    <div className="flex items-start gap-3">
+                      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-lg">{catEmoji(e.category)}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="font-medium leading-snug">{e.description}</p>
+                          <span className="shrink-0 font-semibold">{brl(Number(e.amount))}</span>
+                        </div>
+                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+                          <span>{e.due_date ? format(parseISO(e.due_date), "dd 'de' MMM", { locale: ptBR }) : "Sem data"}</span>
+                          {days !== null && (
+                            <Badge variant={days < 0 ? "destructive" : "secondary"}>
+                              {days < 0 ? `${-days}d atrasada` : days === 0 ? "Vence hoje" : `em ${days} dias`}
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {e.due_date && (
+                            <Button asChild variant="outline" size="sm">
+                              <a target="_blank" rel="noreferrer" href={googleCalendarLink({ title: `💸 Pagar: ${e.description} (${brl(Number(e.amount))})`, date: e.due_date })}>
+                                <CalendarPlus className="size-4" /> Google Agenda
+                              </a>
+                            </Button>
+                          )}
+                          <Button variant="outline" size="sm" onClick={() => markPaid(e)}><Check className="size-4" /> Marcar pago</Button>
+                        </div>
+                      </div>
                     </div>
-                    {days !== null && (
-                      <Badge variant={days < 0 ? "destructive" : "secondary"}>
-                        {days < 0 ? `${-days}d atrasada` : days === 0 ? "Hoje" : `em ${days}d`}
-                      </Badge>
-                    )}
-                    <span className="w-24 text-right font-semibold">{brl(Number(e.amount))}</span>
-                    {e.due_date && (
-                      <Button asChild variant="ghost" size="icon" aria-label="Google Agenda">
-                        <a target="_blank" rel="noreferrer" href={googleCalendarLink({ title: `💸 Pagar: ${e.description} (${brl(Number(e.amount))})`, date: e.due_date })}>
-                          <CalendarPlus className="size-4" />
-                        </a>
-                      </Button>
-                    )}
-                    <Button variant="ghost" size="icon" onClick={() => markPaid(e)} aria-label="Marcar como pago"><Check className="size-4" /></Button>
                   </li>
                 );
               })}
