@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      custom_categories: {
+        Row: {
+          created_at: string
+          emoji: string
+          household_id: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          emoji?: string
+          household_id: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          household_id?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_categories_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expenses: {
         Row: {
           amount: number

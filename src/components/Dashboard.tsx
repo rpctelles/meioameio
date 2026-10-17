@@ -12,10 +12,11 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ExpenseDialog } from "./ExpenseDialog";
-import { CATEGORIES, catEmoji, type Expense, type Household, type Member, type Settlement } from "@/lib/types";
+import { type Expense, type Household, type Member, type Settlement } from "@/lib/types";
 import { brl, computeBalance, shareOf } from "@/lib/split";
 import { googleCalendarLink } from "@/lib/gcal";
 import { exportToExcel } from "@/lib/export";
+import { useCategories } from "@/hooks/useCategories";
 
 const COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)"];
 
@@ -26,6 +27,8 @@ export function Dashboard({ me, household, members }: { me: string; household: H
   const [editing, setEditing] = useState<Expense | null>(null);
   const [q, setQ] = useState("");
   const [cat, setCat] = useState("all");
+  const cats = useCategories(household.id);
+  const catEmoji = cats.emojiOf;
 
   const { data: expenses = [] } = useQuery({
     queryKey: ["expenses", household.id],
@@ -230,7 +233,7 @@ export function Dashboard({ me, household, members }: { me: string; household: H
               <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas</SelectItem>
-                {CATEGORIES.map((c) => <SelectItem key={c.name} value={c.name}>{c.emoji} {c.name}</SelectItem>)}
+                {cats.all.map((c) => <SelectItem key={c.name} value={c.name}>{c.emoji} {c.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
