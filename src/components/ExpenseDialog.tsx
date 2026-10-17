@@ -149,7 +149,7 @@ export function ExpenseDialog({ open, onOpenChange, householdId, me, members, ed
                   ))}
                 </div>
               </div>
-              <Slider className="my-4" min={0} max={100} step={5} value={[f.payer_share]} onValueChange={([v]) => setF({ ...f, payer_share: v ?? 50 })} />
+              <Slider className="my-4" min={0} max={100} step={1} value={[f.payer_share]} onValueChange={([v]) => setF({ ...f, payer_share: v ?? 50 })} />
               <div className="flex justify-between text-sm">
                 <span><b>{payer?.display_name}</b> {f.payer_share}% · {brl((amount * f.payer_share) / 100)}</span>
                 <span><b>{other?.display_name ?? "Seu par"}</b> {100 - f.payer_share}% · {brl((amount * (100 - f.payer_share)) / 100)}</span>
