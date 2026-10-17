@@ -97,7 +97,7 @@ export function Dashboard({ me, household, members }: { me: string; household: H
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-24 pt-6 md:px-8">
+    <div className="mx-auto max-w-6xl overflow-x-hidden px-4 pb-28 pt-6 md:px-8">
       <header className="flex items-center justify-between">
         <div>
           <p className="text-sm text-muted-foreground">Olá, {meM?.display_name}</p>
@@ -125,7 +125,7 @@ export function Dashboard({ me, household, members }: { me: string; household: H
         </Card>
       )}
 
-      <section className="mt-6 grid gap-4 md:grid-cols-3">
+      <section className="mt-6 grid gap-4 md:grid-cols-3 [&>*]:min-w-0">
         <Card className="bg-hero relative overflow-hidden border-0 p-6 text-primary-foreground shadow-soft md:col-span-2">
           <p className="text-sm text-primary-foreground/70">Saldo entre vocês</p>
           <p className="mt-2 font-display text-4xl md:text-5xl">
@@ -157,7 +157,7 @@ export function Dashboard({ me, household, members }: { me: string; household: H
         </Card>
       </section>
 
-      <section className="mt-4 grid gap-4 md:grid-cols-3">
+      <section className="mt-4 grid gap-4 md:grid-cols-3 [&>*]:min-w-0">
         <Card className="p-6">
           <h3 className="text-lg">Por categoria</h3>
           {byCat.length ? (
@@ -174,9 +174,9 @@ export function Dashboard({ me, household, members }: { me: string; household: H
               </div>
               <ul className="space-y-1.5 text-sm">
                 {byCat.slice(0, 5).map((c, i) => (
-                  <li key={c.name} className="flex items-center justify-between">
+                  <li key={c.name} className="flex items-center justify-between gap-3">
                     <span className="flex items-center gap-2"><span className="size-2.5 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />{catEmoji(c.name)} {c.name}</span>
-                    <span className="font-medium">{brl(c.value)}</span>
+                    <span className="shrink-0 font-medium">{brl(c.value)}</span>
                   </li>
                 ))}
               </ul>
@@ -191,28 +191,34 @@ export function Dashboard({ me, household, members }: { me: string; household: H
               {upcoming.slice(0, 6).map((e) => {
                 const days = e.due_date ? differenceInCalendarDays(parseISO(e.due_date), new Date()) : null;
                 return (
-                  <li key={e.id} className="flex items-center gap-3 py-2.5">
-                    <span className="text-xl">{catEmoji(e.category)}</span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium">{e.description}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {e.due_date ? format(parseISO(e.due_date), "dd 'de' MMM", { locale: ptBR }) : "Sem data"} · {name(e.paid_by)}
-                      </p>
+                  <li key={e.id} className="py-3">
+                    <div className="flex items-start gap-3">
+                      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-lg">{catEmoji(e.category)}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="font-medium leading-snug">{e.description}</p>
+                          <span className="shrink-0 font-semibold">{brl(Number(e.amount))}</span>
+                        </div>
+                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+                          <span>{e.due_date ? format(parseISO(e.due_date), "dd 'de' MMM", { locale: ptBR }) : "Sem data"}</span>
+                          {days !== null && (
+                            <Badge variant={days < 0 ? "destructive" : "secondary"}>
+                              {days < 0 ? `${-days}d atrasada` : days === 0 ? "Vence hoje" : `em ${days} dias`}
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {e.due_date && (
+                            <Button asChild variant="outline" size="sm">
+                              <a target="_blank" rel="noreferrer" href={googleCalendarLink({ title: `💸 Pagar: ${e.description} (${brl(Number(e.amount))})`, date: e.due_date })}>
+                                <CalendarPlus className="size-4" /> Google Agenda
+                              </a>
+                            </Button>
+                          )}
+                          <Button variant="outline" size="sm" onClick={() => markPaid(e)}><Check className="size-4" /> Marcar pago</Button>
+                        </div>
+                      </div>
                     </div>
-                    {days !== null && (
-                      <Badge variant={days < 0 ? "destructive" : "secondary"}>
-                        {days < 0 ? `${-days}d atrasada` : days === 0 ? "Hoje" : `em ${days}d`}
-                      </Badge>
-                    )}
-                    <span className="w-24 text-right font-semibold">{brl(Number(e.amount))}</span>
-                    {e.due_date && (
-                      <Button asChild variant="ghost" size="icon" aria-label="Google Agenda">
-                        <a target="_blank" rel="noreferrer" href={googleCalendarLink({ title: `💸 Pagar: ${e.description} (${brl(Number(e.amount))})`, date: e.due_date })}>
-                          <CalendarPlus className="size-4" />
-                        </a>
-                      </Button>
-                    )}
-                    <Button variant="ghost" size="icon" onClick={() => markPaid(e)} aria-label="Marcar como pago"><Check className="size-4" /></Button>
                   </li>
                 );
               })}
@@ -224,13 +230,13 @@ export function Dashboard({ me, household, members }: { me: string; household: H
       <Card className="mt-4 p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="text-lg">Gastos do mês</h3>
-          <div className="flex gap-2">
-            <div className="relative">
+          <div className="flex w-full gap-2 sm:w-auto">
+            <div className="relative flex-1 sm:flex-none">
               <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-              <Input className="w-44 pl-8" placeholder="Buscar" value={q} onChange={(e) => setQ(e.target.value)} />
+              <Input className="w-full pl-8 sm:w-44" placeholder="Buscar" value={q} onChange={(e) => setQ(e.target.value)} />
             </div>
             <Select value={cat} onValueChange={setCat}>
-              <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-36 sm:w-40"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas</SelectItem>
                 {cats.all.map((c) => <SelectItem key={c.name} value={c.name}>{c.emoji} {c.name}</SelectItem>)}
@@ -241,19 +247,24 @@ export function Dashboard({ me, household, members }: { me: string; household: H
         {filtered.length ? (
           <ul className="mt-4 divide-y">
             {filtered.map((e) => (
-              <li key={e.id} className="group flex items-center gap-3 py-3">
-                <span className="flex size-10 items-center justify-center rounded-full bg-muted text-lg">{catEmoji(e.category)}</span>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium">{e.description} {!e.is_paid && <Badge variant="outline" className="ml-1">a pagar</Badge>}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {format(parseISO(e.expense_date), "dd/MM")} · {name(e.paid_by)} pagou · {Number(e.payer_share)}/{100 - Number(e.payer_share)}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold">{brl(Number(e.amount))}</p>
-                  <p className="text-xs text-muted-foreground">sua parte {brl(shareOf(me, e))}</p>
-                </div>
-                <div className="flex opacity-60 group-hover:opacity-100">
+              <li key={e.id} className="flex items-start gap-3 py-3.5">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-lg">{catEmoji(e.category)}</span>
+                <button type="button" className="min-w-0 flex-1 text-left" onClick={() => { setEditing(e); setOpen(true); }}>
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="font-medium leading-snug">{e.description}</p>
+                    <span className="shrink-0 font-semibold">{brl(Number(e.amount))}</span>
+                  </div>
+                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+                    <span>{format(parseISO(e.expense_date), "dd/MM")}</span>
+                    <span>·</span>
+                    <span>{name(e.paid_by)} pagou</span>
+                    <span>·</span>
+                    <span>{Number(e.payer_share)}/{100 - Number(e.payer_share)}</span>
+                    {!e.is_paid && <Badge variant="outline">a pagar</Badge>}
+                  </div>
+                  <p className="mt-0.5 text-sm text-muted-foreground">Sua parte: <span className="font-medium text-foreground">{brl(shareOf(me, e))}</span></p>
+                </button>
+                <div className="flex shrink-0 flex-col sm:flex-row">
                   <Button variant="ghost" size="icon" onClick={() => { setEditing(e); setOpen(true); }} aria-label="Editar"><Pencil className="size-4" /></Button>
                   <Button variant="ghost" size="icon" onClick={() => remove(e)} aria-label="Excluir"><Trash2 className="size-4" /></Button>
                 </div>
