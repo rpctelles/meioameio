@@ -1,14 +1,18 @@
-# Welcome to your Lovable project
+# Meioameio
+
+Um app pra acompanhar gastos compartilhado com mais uma pessoa (minha mulher). Quero que seja capaz cadastrar gastos compartilhados para podermos dividir ( mesmo que não 50/50 ). Tem que ser algo bonito e bem feito, simples , que de pra exportar em Excel, que de pra salvar o dia de pagamento de algo em calendário do Google, dentre outras funcionalidades que acredito que você possa me sugerir . De o seu melhor
 
 This project was built with [Lovable](https://lovable.dev).
 
+**Live app**: https://meioameio.lovable.app
+
 ## Build with Lovable
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/1f7270f6-7eb2-4a25-b15c-3fcdbefcbbb3).
 
 - **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+- **Stay in sync**: every change made in Lovable is committed straight to this repository.
+- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
 
 ## Development
 
@@ -20,10 +24,3 @@ cd <repository-name>
 npm i
 npm run dev
 ```
-
-## Built with
-
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
